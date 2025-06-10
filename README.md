@@ -87,7 +87,7 @@ The Decision Tree Classifier's performance is evaluated using:
 
 ## Contacts
 
-- **Name**: [Elvis Tile]
-- **Email**: [tile.pc@hotmail.com]
-- **LinkedIn**: [[Your LinkedIn Profile](https://www.linkedin.com/in/elvis-kiprono-0617747b/)]
-- **GitHub**: [[Your GitHub Profile](https://github.com/elvis07jr)]
+- **Name**: Elvis Tile
+- **Email**: [Email](tile.pc@hotmail.com)
+- **LinkedIn**: [[LinkedIn](https://www.linkedin.com/in/elvis-kiprono-0617747b/)]
+- **GitHub**: [[GitHub](https://github.com/elvis07jr)]
