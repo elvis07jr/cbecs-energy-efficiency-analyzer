@@ -60,11 +60,12 @@ The Decision Tree Classifier's performance is evaluated using:
 - **ROC Curve and AUC Score**: Visualizes the trade-off between True Positive Rate and False Positive Rate.
 - **Confusion Matrix**: Shows the counts of True Positives, True Negatives, False Positives, and False Negatives.
 
+![Confusion Matrix](https://github.com/elvis07jr/cbecs-energy-efficiency-analyzer/blob/main/DATA/Confusion%20Matrix.png)
 ### Visualizations:
 - **ROC Curve**: Plots the classifier's performance against a random classifier.
 - **Confusion Matrix**: Clearly shows the model's prediction accuracy and types of errors (false positives and false negatives).
 - **Decision Tree Diagram**: A simplified visual representation of the trained Decision Tree, showing key splits and decision rules.
-
+![Roc Curve](https://github.com/elvis07jr/cbecs-energy-efficiency-analyzer/blob/main/DATA/ROC%20Curve.png)
 ---
 
 ## Conclusion
