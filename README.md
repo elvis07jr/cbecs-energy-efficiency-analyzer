@@ -1,65 +1,93 @@
 # "Building Energy Savings Guide: Spotting Best Upgrade Opportunities"
-
+# Phase 3 Machine Learning Project
 ![[Image_bfc2d7bfc2d7bfc2.jpg](attachment:Image_bfc2d7bfc2d7bfc2.jpg)](https://github.com/elvis07jr/cbecs-energy-efficiency-analyzer/blob/main/DATA/Image_bfc2d7bfc2d7bfc2.jpg)
-## Project Overview
+## Business Understanding
 
-This project aims to leverage the U.S. Energy Information Administration's (EIA) Commercial Buildings Energy Consumption Survey (CBECS) 2018 dataset to identify commercial buildings with significant, targeted energy efficiency retrofit potential. Unlike traditional energy consumption prediction or general benchmarking, this project focuses on pinpointing specific end-uses (e.g., heating, cooling, lighting) where a building's energy consumption is disproportionately high compared to similar buildings, indicating a clear opportunity for specific interventions.
+### Stakeholder:
+Energy Efficiency Program Managers / Building Owners
 
-## Problem Statement
+### Business Problem:
+To identify commercial buildings with unusually high heating energy consumption compared to similar buildings, thereby pinpointing optimal targets for energy efficiency retrofits. The goal is to provide actionable insights for focused interventions to reduce energy use, operating expenses, and environmental impact.
 
-In order to determine where energy efficiency improvements are most needed, how can we use the CBECS dataset to identify commercial buildings that consume particularly high amounts of energy in particular areas (such as lighting, heating, or cooling) when compared to similar buildings?
+### Dataset:
+U.S. Energy Information Administration's (EIA) Commercial Buildings Energy Consumption Survey (CBECS) 2018 public-use microdata.
 
-## Motivation
+---
 
-Finding buildings that can increase their energy efficiency is essential for lowering overall energy use, operating expenses, and environmental effect. Present methods frequently concentrate on wide benchmarking or overall energy consumption intensity (EUI). A building may, however, have an average EUI but be extremely inefficient in one area (such as old lighting systems) and extremely efficient in another. By identifying particular areas of inefficiency, this research aims to deliver more detailed, actionable information that will enable more focused and successful retrofit efforts.
+## Data Understanding
 
-## My Dataset
+### Initial Exploration:
+Initial data exploration involved loading the dataset, inspecting its structure, and identifying special codes (-2, -9) representing missing or suppressed values.
 
-I worked with the **Commercial Buildings Energy Consumption Survey (CBECS) 2018** dataset, which I obtained from the **U.S. Energy Information Administration (EIA)**. This was a comprehensive national survey where EIA collected detailed information on U.S. commercial buildings, including their energy use and associated costs. What was particularly useful for my project was that it provided energy consumption broken down by specific end-uses, such as heating, cooling, lighting, and refrigeration.
+### Data Cleaning:
+Special codes for missing values were replaced with `np.nan`. Targeted imputation was performed for `RENOV` and `BASEMNT` columns, handling string 'nan' and `np.nan` values by replacing them with 'UNKNOWN_CATEGORY'.
 
-* **Name:** Commercial Buildings Energy Consumption Survey (CBECS) 2018
-* **Source:** U.S. Energy Information Administration (EIA)
-* **Description:** This dataset provided detailed information on the U.S. commercial building stock, covering energy use and expenditures, with breakdowns for various end-uses.
-* **Availability:** I accessed it directly from the [EIA CBECS Data page](https://www.eia.gov/consumption/commercial/data/2018/).
+### Feature Engineering:
+- Calculated `TOTAL_BTU` for various end-uses (e.g., heating, cooling).
+- Defined peer groups for buildings based on `PBA` (Principal Building Activity), `PUBCLIM` (Public Climate Region), and `SQFT_BINNED` (binned Square Footage).
+- Calculated peer group medians and standard deviations for energy consumption.
+- Created the target variable `HIGH_HEATING_POTENTIAL` based on a building's heating consumption exceeding peer group thresholds (ratio and Z-score).
+- Mapped `PBA` numerical codes to descriptive string labels for better interpretability.
 
-## My Methodology (My High-Level Plan)
+---
 
-Here's how I approached this project, step-by-step:
+## Data Preparation
 
-1.  **Data Acquisition & Loading:** I started by downloading the CBECS 2018 public-use microdata file and loaded it into my analysis environment.
-2.  **Exploratory Data Analysis (EDA):**
-    * I spent time understanding the dataset's structure, the types of variables it contained, and the distribution of values.
-    * I carefully identified and handled missing values, especially those represented by special codes like `-2` ('Not Applicable') and `-9` ('Don't Know'), converting them to standard `NaN` values.
-3.  **Feature Engineering:** This was a crucial phase where I built the core components for my prediction:
-    * I defined "peer groups" for buildings based on key shared characteristics, such as building type, climate zone, size range, and typical operating hours. This allowed for fair comparisons.
-    * For each major energy end-use (like electricity for space heating (`BTUELSPH`), cooling (`BTUELCOL`), or lighting (`BTUELLGT`)), I calculated a "disproportionate consumption" metric. This involved things like comparing a building's end-use consumption to the median or mean of its defined peer group, or calculating a Z-score to see how much it deviated from the average. I also defined a threshold (e.g., if consumption was in the top 20% of its peer group).
-    * Based on these metrics, I defined my **dependent variable (my target)**. I classified buildings into categories like "High Heating Efficiency Potential," "High Cooling Efficiency Potential," "High Lighting Efficiency Potential," or "Low Overall Efficiency Potential." I anticipated this would be set up as a multi-label classification problem, as a single building might have multiple areas of high potential.
-4.  **Feature Selection:** I carefully selected the relevant independent variables (the features) that I believed would influence end-use consumption. These included details like building age, square footage, specific equipment types, climate data, weekly operating hours, and the principal building activity.
-5.  **Model Selection:** I explored various machine learning classification models for this task. I considered options like Logistic Regression, Random Forest, and Gradient Boosting Machines (such as LightGBM or XGBoost).
-    * I specifically considered multi-label classification approaches given that a single building might present several high-potential areas for improvement.
-6.  **Model Training & Evaluation:**
-    * I split my prepared data into training and testing sets to ensure my model learned from one part and was tested on unseen data.
-    * I then trained the selected models on the training data.
-    * Finally, I evaluated the models' performance using appropriate metrics like Precision, Recall, F1-score, and ROC-AUC for each specific end-use classification.
-7.  **Interpretation & Insights:** After training and evaluating, I analyzed the model outputs to understand which specific building features or operational aspects were the strongest drivers of disproportionate consumption in each end-use. This was where I extracted actionable insights for targeted retrofits.
+### Train-Test Split:
+The dataset was split into training and testing sets (`X_scaled` and `y['HIGH_HEATING_POTENTIAL']`) using `train_test_split` with an 80/20 ratio and stratification to maintain class distribution.
 
-## Key Variables I Used (Examples)
+### Scaling:
+Numerical features were scaled using `StandardScaler` to ensure they contribute equally to the model.
 
-Here are the main variables I focused on in my analysis:
+### Preventing Data Leakage:
+- SMOTE (Synthetic Minority Over-sampling Technique) was applied only to the training data (`X_train_resampled`, `y_train_resampled`) to address class imbalance for the `HIGH_HEATING_POTENTIAL` target, preventing data leakage from the test set.
+- Categorical features were one-hot encoded using `pd.get_dummies` after handling missing values.
+- Features were selected based on prior feature importance analysis to streamline the dataset.
 
-* **My Target Variables (What I Predicted):**
-    * `Heating_Retrofit_Potential` (e.g., indicating High or Low potential for heating upgrades)
-    * `Cooling_Retrofit_Potential` (e.g., High or Low potential for cooling upgrades)
-    * `Lighting_Retrofit_Potential` (e.g., High or Low potential for lighting upgrades)
-    * *(These were derived from the original `BTUELSPH`, `BTUELCOL`, `BTUELLGT` values, compared to peer groups.)*
-* **My Input Variables (The Building Features I Used to Predict):**
-    * `PBA` (The building's main use, like an office or retail store)
-    * `SQFT` (The total square footage of the building)
-    * `YEARCON` (The year the building was constructed)
-    * `WKHRS` (How many hours the building typically operates per week)
-    * `EMP_TOT` (The total number of employees in the building)
-    * `CDD65` / `HDD65` (Climate data: Cooling and Heating Degree Days for context)
-    * `EQUIPM` (The main heating equipment type)
-    * `ACEQUIPM` (The main cooling equipment type)
-    * `LGTINLED` (Whether the building uses LED indoor lighting)
-    * ...and many other structural and operational details available in the CBECS dataset.
+---
+
+## Modeling
+
+For this project, a Decision Tree Classifier was chosen as the model type. Key metrics used for evaluation included Accuracy, Precision, Recall, F1-score, and ROC AUC Score for both the training and test sets. The model was trained with specific hyperparameters (`max_depth=8`, `min_samples_leaf=20`, `random_state=42`) after applying SMOTE to the training data. The classification report provides detailed precision, recall, and F1-scores for both classes, while the test set's ROC AUC score (typically observed around 0.78) indicates the model's ability to distinguish between high and low heating potential buildings is better than random, with the train ROC AUC also reported to check for potential overfitting.
+
+---
+
+## Evaluation
+
+### Model Performance:
+The Decision Tree Classifier's performance is evaluated using:
+- **Classification Report**: Provides precision, recall, f1-score, and support for class 0 (No Potential) and class 1 (High Potential).
+- **ROC Curve and AUC Score**: Visualizes the trade-off between True Positive Rate and False Positive Rate.
+- **Confusion Matrix**: Shows the counts of True Positives, True Negatives, False Positives, and False Negatives.
+
+### Visualizations:
+- **ROC Curve**: Plots the classifier's performance against a random classifier.
+- **Confusion Matrix**: Clearly shows the model's prediction accuracy and types of errors (false positives and false negatives).
+- **Decision Tree Diagram**: A simplified visual representation of the trained Decision Tree, showing key splits and decision rules.
+
+---
+
+## Conclusion
+
+### Recommendations:
+- **Prioritized Outreach**: Use model predictions to target high-potential buildings for retrofits first, maximizing ROI.
+- **Tailored Solutions**: Follow up with targeted energy audits based on model insights (e.g., roof/wall construction) to propose precise solutions.
+- **Data-Driven Decisions**: Leverage the model for informed investment decisions and to demonstrate tangible energy savings.
+- **Addressing Missed Opportunities**: Explore strategies to reduce false negatives in future model iterations to capture more high-value targets.
+- **Long-Term Strategy**: Integrate this model as a foundational element for continuous energy management and carbon footprint reduction.
+
+### Next Steps:
+- Implement systematic hyperparameter tuning (e.g., `GridSearchCV`) to find optimal model parameters.
+- Employ cross-validation for more robust model evaluation and to reduce bias.
+- Explore other classification algorithms (e.g., Gradient Boosting, SVM) and ensemble methods.
+- Investigate the specific impact of each one-hot encoded feature on predictions (e.g., specific `PBA` types).
+- Develop a user-friendly interface for building energy managers to input data and receive predictions.
+
+---
+
+## Contacts
+
+- **Name**: [Elvis Tile]
+- **Email**: [tile.pc@hotmail.com]
+- **LinkedIn**: [[Your LinkedIn Profile](https://www.linkedin.com/in/elvis-kiprono-0617747b/)]
+- **GitHub**: [[Your GitHub Profile](https://github.com/elvis07jr)]
