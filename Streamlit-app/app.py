@@ -67,38 +67,57 @@ st.markdown("""
 # Load Data
 @st.cache_data
 def load_data():
-    # First, let's see what files are in the current directory
-    current_dir = os.listdir('.')
-    csv_files = [f for f in current_dir if f.endswith('.csv')]
+    # Define possible paths to look for the file
+    possible_paths = [
+        'cbecs2018_final_public (2).csv',
+        'cbecs2018_final_public.csv',
+        'cbecs2018_final_public (1).csv',
+        'Streamlit-app/cbecs2018_final_public (2).csv',
+        'Streamlit-app/cbecs2018_final_public.csv',
+        'Streamlit-app/cbecs2018_final_public (1).csv',
+        './Streamlit-app/cbecs2018_final_public (2).csv',
+        './Streamlit-app/cbecs2018_final_public.csv',
+        './Streamlit-app/cbecs2018_final_public (1).csv'
+    ]
     
-    st.write("Available CSV files in directory:")
-    st.write(csv_files)
+    # Check each possible path
+    data_file = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            data_file = path
+            break
     
-    # Try to find the CBECS file
-    cbecs_files = [f for f in csv_files if 'cbecs2018' in f.lower()]
+    if data_file is None:
+        # Show directory structure to help debug
+        st.write("Current directory contents:")
+        st.write(os.listdir('.'))
+        
+        if os.path.exists('Streamlit-app'):
+            st.write("Streamlit-app directory contents:")
+            st.write(os.listdir('Streamlit-app'))
+        
+        st.error("CBECS data file not found in expected locations.")
+        return None
     
-    if cbecs_files:
-        st.success(f"Found CBECS file: {cbecs_files[0]}")
-        df = pd.read_csv(cbecs_files[0])
-    else:
-        st.error("No CBECS data file found. Please upload the CSV file.")
-        st.stop()
-    
-    # Data cleaning and preprocessing
-    df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
-    df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
-    df['AGE'] = 2018 - df['YRCONC']  # Building age
-    return df
+    try:
+        df = pd.read_csv(data_file)
+        # Data cleaning and preprocessing
+        df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
+        df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
+        df['AGE'] = 2018 - df['YRCONC']  # Building age
+        return df
+    except Exception as e:
+        st.error(f"Error reading file {data_file}: {str(e)}")
+        return None
 
 # Try to load data, but if it fails, show file uploader
-try:
-    df = load_data()
-except Exception as e:
-    st.error(f"Error loading data: {str(e)}")
+df = load_data()
+
+if df is None:
     st.markdown("""
     <div class="file-uploader">
         <h3>📁 Upload CBECS Data File</h3>
-        <p>Please upload the CBECS 2018 CSV file to continue.</p>
+        <p>The CBECS data file was not found in the expected locations. Please upload the CSV file to continue.</p>
     </div>
     """, unsafe_allow_html=True)
     
