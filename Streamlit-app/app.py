@@ -59,15 +59,12 @@ st.markdown("""
 # Load Data
 @st.cache_data
 def load_data():
-<<<<<<< HEAD
     df = pd.read_csv('cbecs2018_final_public.csv')
     # Data cleaning and preprocessing
     df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
     df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
     df['AGE'] = 2018 - df['YRCONC']  # Building age
     return df
-=======
-    return pd.read_csv('cbecs2018_final_public.csv')  # Update filename to match actual file
 
 df = load_data()
 
