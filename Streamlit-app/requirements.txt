@@ -1,4 +1,9 @@
 streamlit
 pandas
+numpy
 plotly
+seaborn
 scikit-learn
+geopandas
+folium
+streamlit-folium
