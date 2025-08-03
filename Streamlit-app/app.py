@@ -54,37 +54,69 @@ st.markdown("""
         color: #6c757d;
         margin-top: 0.5rem;
     }
+    .file-uploader {
+        border: 2px dashed #3498db;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Load Data
 @st.cache_data
 def load_data():
-    # Try multiple possible filenames
-    possible_filenames = [
-        'cbecs2018_final_public (2).csv',
-        'cbecs2018_final_public.csv',
-        'cbecs2018_final_public (1).csv'
-    ]
+    # First, let's see what files are in the current directory
+    current_dir = os.listdir('.')
+    csv_files = [f for f in current_dir if f.endswith('.csv')]
     
-    data_file = None
-    for filename in possible_filenames:
-        if os.path.exists(filename):
-            data_file = filename
-            break
+    st.write("Available CSV files in directory:")
+    st.write(csv_files)
     
-    if data_file is None:
-        st.error(f"Data file not found. Please ensure one of these files exists in the same directory: {', '.join(possible_filenames)}")
+    # Try to find the CBECS file
+    cbecs_files = [f for f in csv_files if 'cbecs2018' in f.lower()]
+    
+    if cbecs_files:
+        st.success(f"Found CBECS file: {cbecs_files[0]}")
+        df = pd.read_csv(cbecs_files[0])
+    else:
+        st.error("No CBECS data file found. Please upload the CSV file.")
         st.stop()
     
-    df = pd.read_csv(data_file)
     # Data cleaning and preprocessing
     df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
     df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
     df['AGE'] = 2018 - df['YRCONC']  # Building age
     return df
 
-df = load_data()
+# Try to load data, but if it fails, show file uploader
+try:
+    df = load_data()
+except Exception as e:
+    st.error(f"Error loading data: {str(e)}")
+    st.markdown("""
+    <div class="file-uploader">
+        <h3>📁 Upload CBECS Data File</h3>
+        <p>Please upload the CBECS 2018 CSV file to continue.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            # Data cleaning and preprocessing
+            df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
+            df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
+            df['AGE'] = 2018 - df['YRCONC']  # Building age
+            st.success("Data loaded successfully!")
+        except Exception as e:
+            st.error(f"Error reading uploaded file: {str(e)}")
+            st.stop()
+    else:
+        st.stop()
 
 # Create comprehensive mappings that include all values in the dataset
 def create_mapping(data, column, base_mapping):
