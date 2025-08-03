@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 # Load data
 @st.cache_data
 def load_data():
-    return pd.read_csv('cbecs2018_final_public (2).csv')  # Update filename to match actual file
+    return pd.read_csv('cbecs2018_final_public.csv')  # Update filename to match actual file
 
 df = load_data()
 
