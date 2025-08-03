@@ -68,7 +68,6 @@ def load_data():
     return df
 =======
     return pd.read_csv('cbecs2018_final_public.csv')  # Update filename to match actual file
->>>>>>> c0a574bf4556310c46a9016ee81ed1529717320f
 
 df = load_data()
 
