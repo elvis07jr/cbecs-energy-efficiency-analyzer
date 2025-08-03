@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.ensemble import RandomForestRegressor
+import os
 
 # Page Configuration
 st.set_page_config(
@@ -59,7 +60,24 @@ st.markdown("""
 # Load Data
 @st.cache_data
 def load_data():
-    df = pd.read_csv('cbecs2018_final_public.csv')
+    # Try multiple possible filenames
+    possible_filenames = [
+        'cbecs2018_final_public (2).csv',
+        'cbecs2018_final_public.csv',
+        'cbecs2018_final_public (1).csv'
+    ]
+    
+    data_file = None
+    for filename in possible_filenames:
+        if os.path.exists(filename):
+            data_file = filename
+            break
+    
+    if data_file is None:
+        st.error(f"Data file not found. Please ensure one of these files exists in the same directory: {', '.join(possible_filenames)}")
+        st.stop()
+    
+    df = pd.read_csv(data_file)
     # Data cleaning and preprocessing
     df = df.replace([999, 9999, 99999], np.nan)  # Replace missing value codes
     df['ENERGY_INTENSITY'] = df['MFUSED'] / df['SQFT']  # Calculate energy intensity
